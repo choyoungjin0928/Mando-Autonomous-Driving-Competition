@@ -1,0 +1,55 @@
+<launch>
+
+  <include file="$(find sc_mini)/launch/sc_mini_test.launch" />
+  <include file="$(find handsfree_ros_imu)/launch/handsfree_imu.launch" />
+
+  <param name="robot_description" textfile="$(find xycar_slam)/urdf/xycar.urdf" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+<!-- SLAM 카토그래퍼 -->
+  <node name="cartographer_node" pkg="cartographer_ros" type="cartographer_node" args="
+    -configuration_directory $(find xycar_slam)/config 
+    -configuration_basename xycar_localization.lua
+    -load_state_filename $(find xycar_slam)/maps/mando_11_27_2.pbstream" />
+
+
+<!-- 카메라 -->
+  <node name="csi_cam" output="screen" pkg="camera_test" type="csi_camera.py" />
+  <node name="serial_node"        pkg="rosserial_python"      type="serial_node.py">
+    <param name="port"              type="string"               value="/dev/ttyUSB0"/>
+    <param name="baud"              type="int"                  value="115200"/>
+  </node>
+
+<!-- rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find xycar_slam)/rviz/localization.rviz" />
+
+
+  <!-- Console launch prefix -->
+  <arg name="launch_prefix" default=""/>
+  <arg name="image" default="/csi_image" />
+
+  <!-- Config and weights folder. -->
+  <arg name="yolo_weights_path"          default="$(find darknet_ros)/yolo_network_config/weights"/>
+  <arg name="yolo_config_path"           default="$(find darknet_ros)/yolo_network_config/cfg"/>
+
+  <!-- ROS and network parameter files -->
+  <arg name="ros_param_file"             default="$(find darknet_ros)/config/ros.yaml"/>
+  <arg name="network_param_file"         default="$(find darknet_ros)/config/yolov3-tiny_hnd.yaml"/>
+
+  <!-- Load parameters -->
+  <rosparam command="load" ns="darknet_ros" file="$(arg ros_param_file)"/>
+  <rosparam command="load" ns="darknet_ros" file="$(arg network_param_file)"/>
+
+  <!-- Start darknet and ros wrapper -->
+  <node pkg="darknet_ros" type="darknet_ros" name="darknet_ros" output="screen" launch-prefix="$(arg launch_prefix)">
+    <param name="weights_path"          value="$(arg yolo_weights_path)" />
+    <param name="config_path"           value="$(arg yolo_config_path)" />
+    <remap from="/static_image"  to="$(arg image)" />
+  </node>
+ 
+ <node name="republish" type="republish" pkg="image_transport" output="screen" 	args="compressed in:=/front_camera/image_raw raw out:=/camera/image_raw" />
+  <node name="main" pkg="xycar_slam" type="main_yolo.py" output="screen" />
+  
+</launch>
+
+

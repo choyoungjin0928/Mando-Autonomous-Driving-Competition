@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="sc_mini" type="sc_mini" name="sc_mini" output="screen">
+    <param name="frame_id" type="string" value="laser_frame"/>
+    <param name="port" type="string" value="/dev/sc_mini"/>
+    <param name="baud_rate" type="int" value="115200"/>
+  </node>
+
+  <!--node name="rviz" pkg="rviz" type="rviz" args="-d $(find sc_mini)/rviz/sc_m.rviz"/-->
+</launch>

@@ -1,0 +1,19 @@
+<launch>
+  <param name="robot_description" textfile="$(find xycar_slam)/urdf/xycar.urdf" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- SLAM 카토그래퍼 -->
+  <!--node name="cartographer_node" pkg="cartographer_ros" type="cartographer_node" args="
+    -configuration_directory $(find xycar_slam)/config 
+    -configuration_basename localization_3.lua
+    -load_state_filename $(find xycar_slam)/maps/final_0916_10_map.pbstream" /-->
+
+ 
+
+  <node name="main" pkg="final" type="tsign_main.py" output="screen" />
+  
+  <!--node name="rviz" pkg="rviz" type="rviz" args="-d $(find xycar_slam)/rviz/xycar_mapping.rviz" /-->
+  
+</launch>
+
+

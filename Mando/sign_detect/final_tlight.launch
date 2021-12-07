@@ -1,0 +1,24 @@
+<launch>
+  <param name="robot_description" textfile="$(find xycar_slam)/urdf/xycar.urdf" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- SLAM 카토그래퍼 -->
+  <node name="cartographer_node" pkg="cartographer_ros" type="cartographer_node" args="
+    -configuration_directory $(find xycar_slam)/config 
+    -configuration_basename localization_3.lua
+    -load_state_filename $(find xycar_slam)/maps/final_0916_10_map.pbstream" />
+
+  <!-- 카메라 -->
+  <node name="csi_cam" output="screen" pkg="camera_test" type="csi_camera.py" />
+  <node name="serial_node"        pkg="rosserial_python"      type="serial_node.py">
+    <param name="port"              type="string"               value="/dev/ttyUSB1"/>
+    <param name="baud"              type="int"                  value="57600"/>
+  </node>
+
+  <node name="main" pkg="final" type="tlight_main.py" output="screen" />
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find xycar_slam)/rviz/xycar_mapping.rviz" />
+  
+</launch>
+
+
